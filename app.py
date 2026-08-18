@@ -237,8 +237,8 @@ def draw_room(
         ax.add_patch(Rectangle((5.91, -2.55 - i * 0.22), 0.22, 0.13, facecolor="#f8f9fa", edgecolor="#8b949e", lw=0.45, zorder=11))
         ax.add_patch(Rectangle((7.17, -2.54 - i * 0.22), 0.12, 0.12, facecolor="#1971c2", edgecolor="#8b949e", lw=0.45, zorder=11))
 
-    # Isocentre and clearance boundary.
-    iso = np.array([0.0, -0.15])
+    # Treatment isocentre is fixed in the patient setup area; the gantry head rotates around it.
+    iso = np.array([0.75, -0.9])
     ax.add_patch(Circle(iso, 0.08, facecolor="#ff922b", edgecolor="#9c4a00", lw=0.8, zorder=7))
     ax.text(0.14, 0.05, "isocentre", fontsize=8, color="#4b5563", zorder=7)
 
@@ -258,28 +258,43 @@ def draw_room(
         )
 
     if lasers:
-        ax.plot([-1.95, 2.9], [-0.15, 0.22], color="#37d35d", lw=1.5, alpha=0.9, zorder=6)
-        ax.plot([-2.25, 2.65], [0.23, -0.15], color="#37d35d", lw=1.3, alpha=0.75, zorder=6)
-        ax.plot([0.0, 0.0], [-3.95, 1.95], color="#37d35d", lw=1.2, alpha=0.7, zorder=6)
-        ax.plot([-0.1, -0.1], [0.7, 2.55], color="#ff922b", lw=1.0, linestyle=":", alpha=0.9, zorder=7)
+        ax.plot([iso[0] - 2.7, iso[0] + 3.0], [iso[1] - 0.08, iso[1] + 0.32], color="#37d35d", lw=1.5, alpha=0.9, zorder=6)
+        ax.plot([iso[0] - 2.65, iso[0] + 2.55], [iso[1] + 0.33, iso[1] - 0.1], color="#37d35d", lw=1.3, alpha=0.75, zorder=6)
+        ax.plot([iso[0], iso[0]], [-3.95, 1.95], color="#37d35d", lw=1.2, alpha=0.7, zorder=6)
+        ax.plot([iso[0] - 0.1, iso[0] - 0.1], [iso[1] + 0.58, iso[1] + 3.2], color="#ff922b", lw=1.0, linestyle=":", alpha=0.9, zorder=7)
 
     if odi:
-        ax.add_patch(Rectangle((0.64, 0.05), 0.84, 0.72, facecolor="#111315", edgecolor="#6c757d", lw=1.2, zorder=4))
-        ax.add_patch(Rectangle((0.78, 0.18), 0.56, 0.46, facecolor="#08090a", edgecolor="#22282e", lw=0.8, zorder=5))
-        ax.text(1.06, 0.82, "ODI", ha="center", va="bottom", color="#5dd17a", fontsize=7, weight="bold", zorder=7)
+        ax.add_patch(Rectangle((iso[0] + 0.7, iso[1] + 0.75), 0.84, 0.72, facecolor="#111315", edgecolor="#6c757d", lw=1.2, zorder=4))
+        ax.add_patch(Rectangle((iso[0] + 0.84, iso[1] + 0.88), 0.56, 0.46, facecolor="#08090a", edgecolor="#22282e", lw=0.8, zorder=5))
+        ax.text(iso[0] + 1.12, iso[1] + 1.52, "ODI", ha="center", va="bottom", color="#5dd17a", fontsize=7, weight="bold", zorder=7)
 
     # Large C-arm gantry body with simple shaded facets.
-    ax.add_patch(Wedge((-2.45, 0.25), 3.15, 65, 296, width=0.8, facecolor="#6f7478", edgecolor="#3f454b", lw=1.3, zorder=2))
-    ax.add_patch(Wedge((-2.45, 0.25), 2.72, 68, 110, width=0.36, facecolor="#9ca1a5", edgecolor="none", zorder=3, alpha=0.75))
-    ax.add_patch(Wedge((-2.45, 0.25), 2.72, 112, 155, width=0.36, facecolor="#7d8286", edgecolor="none", zorder=3, alpha=0.8))
-    ax.add_patch(Wedge((-2.45, 0.25), 2.72, 205, 265, width=0.36, facecolor="#5f6468", edgecolor="none", zorder=3, alpha=0.8))
-    add_box((-4.78, 0.02), 0.85, 2.95, 0.85, "#73787c", zorder=2)
-    add_box((-4.62, -2.43), 1.22, 1.42, 0.72, "#696e72", zorder=2)
-    add_box((-4.76, -0.9), 0.75, 1.25, 0.55, "#5f6468", zorder=2)
+    gantry_center = np.array([-1.65, -0.15])
+    ax.add_patch(Wedge(gantry_center, 3.15, 62, 294, width=0.82, facecolor="#6f7478", edgecolor="#3f454b", lw=1.3, zorder=2))
+    ax.add_patch(Wedge(gantry_center, 2.72, 66, 108, width=0.36, facecolor="#9ca1a5", edgecolor="none", zorder=3, alpha=0.75))
+    ax.add_patch(Wedge(gantry_center, 2.72, 112, 158, width=0.36, facecolor="#7d8286", edgecolor="none", zorder=3, alpha=0.8))
+    ax.add_patch(Wedge(gantry_center, 2.72, 205, 265, width=0.36, facecolor="#5f6468", edgecolor="none", zorder=3, alpha=0.8))
+    add_box((-4.15, -0.25), 0.85, 2.95, 0.85, "#73787c", zorder=2)
+    add_box((-4.0, -2.68), 1.22, 1.42, 0.72, "#696e72", zorder=2)
+    add_box((-4.15, -1.15), 0.75, 1.25, 0.55, "#5f6468", zorder=2)
 
     gantry_rad = math.radians(90 - gantry)
-    source_radius = 1.55
+    source_radius = 1.68
     source = iso + np.array([math.cos(gantry_rad) * source_radius, math.sin(gantry_rad) * source_radius])
+    connector_direction = source - gantry_center
+    connector_direction = connector_direction / np.linalg.norm(connector_direction)
+    connector_start = gantry_center + connector_direction * 2.42
+    connector_perp = np.array([-connector_direction[1], connector_direction[0]])
+    neck = np.array(
+        [
+            connector_start + connector_perp * 0.34,
+            source + connector_perp * 0.42,
+            source - connector_perp * 0.42,
+            connector_start - connector_perp * 0.34,
+        ]
+    )
+    ax.add_patch(Polygon(neck, closed=True, facecolor="#6a7075", edgecolor="#343a40", lw=1.2, zorder=5))
+    ax.add_patch(Circle(connector_start, 0.34, facecolor="#777d82", edgecolor="#464c52", lw=1.0, zorder=6))
     ax.add_patch(
         Ellipse(
             source,
@@ -316,7 +331,8 @@ def draw_room(
             zorder=8,
         )
     )
-    ax.add_patch(Arc((-2.45, 0.25), 4.85, 4.85, theta1=67, theta2=296, color="#4d5359", lw=1.0, alpha=0.6, zorder=4))
+    ax.text(source[0] + 0.16, source[1] + 0.46, "treatment head", fontsize=7.5, color="#343a40", zorder=9)
+    ax.add_patch(Arc(gantry_center, 4.85, 4.85, theta1=67, theta2=296, color="#4d5359", lw=1.0, alpha=0.6, zorder=4))
 
     if field_light:
         field_width = clamp((abs(jaw_x1) + abs(jaw_x2)) / 4.0, 0.5, 2.8)
@@ -352,7 +368,7 @@ def draw_room(
         ax.add_patch(Polygon(projected, closed=True, facecolor="#ffe066", edgecolor="#e67700", alpha=0.45, zorder=5))
 
     # Couch translation and rotation are deliberately scaled for educational visibility.
-    couch_center = np.array([3.85 + couch_lat * 0.56, -1.65 + couch_lon * 0.34 + couch_vrt * 0.24])
+    couch_center = iso + np.array([0.32 + couch_lat * 0.52, -0.24 + couch_lon * 0.28 + couch_vrt * 0.2])
     couch_angle = math.radians(couch_rot)
     couch_len = 4.35
     couch_wid = 0.86
@@ -369,15 +385,15 @@ def draw_room(
     top_offset = np.array([0.26, 0.18])
     ax.add_patch(Polygon(couch_poly + top_offset, closed=True, facecolor="#2c3035", edgecolor="#111315", lw=1.2, zorder=4))
     ax.add_patch(Polygon(couch_poly, closed=True, facecolor="#050607", edgecolor="#111315", lw=1.2, zorder=5))
-    add_box((3.88, -3.18), 2.15, 0.68, 0.75, "#4e5459", zorder=2)
+    add_box((couch_center[0] + 0.28, couch_center[1] - 1.5), 2.15, 0.68, 0.75, "#4e5459", zorder=2)
     for i in range(5):
-        ax.plot([2.9, 4.85], [-3.25 - i * 0.12, -3.25 - i * 0.12], color="#343a40", lw=0.8, zorder=5)
+        ax.plot([couch_center[0] - 0.7, couch_center[0] + 1.25], [couch_center[1] - 1.57 - i * 0.12, couch_center[1] - 1.57 - i * 0.12], color="#343a40", lw=0.8, zorder=5)
 
     orient = ORIENTATIONS[orientation]
-    patient_center = couch_center + np.array([-0.12, 0.18])
+    patient_center = iso + np.array([couch_lat * 0.28, couch_lon * 0.12 + couch_vrt * 0.08])
     head_x = patient_center[0] + orient["head_sign"] * math.cos(couch_angle) * 1.0
     head_y = patient_center[1] + orient["head_sign"] * math.sin(couch_angle) * 1.0
-    body_center = couch_center - np.array([math.cos(couch_angle), math.sin(couch_angle)]) * orient["head_sign"] * 0.15
+    body_center = patient_center - np.array([math.cos(couch_angle), math.sin(couch_angle)]) * orient["head_sign"] * 0.15
     ax.add_patch(
         Ellipse(
             body_center,
@@ -394,6 +410,7 @@ def draw_room(
         rib = body_center + np.array([math.cos(couch_angle), math.sin(couch_angle)]) * offset
         ax.add_patch(Ellipse(rib, width=0.22, height=0.56, angle=couch_rot, facecolor="#9d826f", edgecolor="none", alpha=0.35, zorder=8))
     ax.add_patch(Circle((head_x, head_y), 0.24, facecolor="#b89a85", edgecolor="#755f52", lw=1.1, zorder=8))
+    ax.plot([source[0], iso[0]], [source[1], iso[1]], color="#ff922b", lw=1.1, linestyle="--", alpha=0.85, zorder=8)
     ax.text(couch_center[0], couch_center[1] - 0.78, orient["label"], ha="center", va="top", fontsize=8, color="#404854", zorder=8)
 
     # Jaw readout as a compact aperture icon.
@@ -401,8 +418,8 @@ def draw_room(
     jaw_right = abs(jaw_x2) / 10.0
     jaw_bottom = -abs(jaw_y1) / 10.0
     jaw_top = abs(jaw_y2) / 10.0
-    ax.add_patch(Rectangle((-1.18, 0.03), 0.66, 0.58, facecolor="#15181b", edgecolor="#5d646b", lw=1.0, zorder=4))
-    ax.add_patch(Rectangle((-1.03 + jaw_left * 0.18, 0.19 + jaw_bottom * 0.12), (jaw_right - jaw_left) * 0.18, (jaw_top - jaw_bottom) * 0.12, facecolor="#ffe066", edgecolor="#e67700", alpha=0.75, zorder=6))
+    ax.add_patch(Rectangle((source[0] - 0.34, source[1] - 0.95), 0.66, 0.58, facecolor="#15181b", edgecolor="#5d646b", lw=1.0, zorder=4))
+    ax.add_patch(Rectangle((source[0] - 0.19 + jaw_left * 0.18, source[1] - 0.79 + jaw_bottom * 0.12), (jaw_right - jaw_left) * 0.18, (jaw_top - jaw_bottom) * 0.12, facecolor="#ffe066", edgecolor="#e67700", alpha=0.75, zorder=6))
 
     ax.text(-3.1, -4.05, f"Gantry {gantry:.0f} deg   Collimator {collimator:.0f} deg   Couch VRT {couch_vrt:+.1f} cm   LAT {couch_lat:+.1f} cm   LON {couch_lon:+.1f} cm", fontsize=9, color="#404854", zorder=12)
     return fig
