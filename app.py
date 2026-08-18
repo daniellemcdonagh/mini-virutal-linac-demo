@@ -3,7 +3,7 @@ import math
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import Arc, Circle, Ellipse, Polygon, Rectangle, Wedge
+from matplotlib.patches import Circle, Ellipse, Polygon, Rectangle
 
 
 st.set_page_config(
@@ -23,10 +23,10 @@ CASE = {
 }
 
 ORIENTATIONS = {
-    "HFS - head first supine": {"head_sign": 1, "label": "HFS"},
-    "HFP - head first prone": {"head_sign": 1, "label": "HFP"},
-    "FFS - feet first supine": {"head_sign": -1, "label": "FFS"},
-    "FFP - feet first prone": {"head_sign": -1, "label": "FFP"},
+    "HFS - head first supine": {"head_sign": -1, "label": "HFS"},
+    "HFP - head first prone": {"head_sign": -1, "label": "HFP"},
+    "FFS - feet first supine": {"head_sign": 1, "label": "FFS"},
+    "FFP - feet first prone": {"head_sign": 1, "label": "FFP"},
 }
 
 
@@ -268,71 +268,31 @@ def draw_room(
         ax.add_patch(Rectangle((iso[0] + 0.84, iso[1] + 0.88), 0.56, 0.46, facecolor="#08090a", edgecolor="#22282e", lw=0.8, zorder=5))
         ax.text(iso[0] + 1.12, iso[1] + 1.52, "ODI", ha="center", va="bottom", color="#5dd17a", fontsize=7, weight="bold", zorder=7)
 
-    # Large C-arm gantry body with simple shaded facets.
-    gantry_center = np.array([-1.65, -0.15])
-    ax.add_patch(Wedge(gantry_center, 3.15, 62, 294, width=0.82, facecolor="#6f7478", edgecolor="#3f454b", lw=1.3, zorder=2))
-    ax.add_patch(Wedge(gantry_center, 2.72, 66, 108, width=0.36, facecolor="#9ca1a5", edgecolor="none", zorder=3, alpha=0.75))
-    ax.add_patch(Wedge(gantry_center, 2.72, 112, 158, width=0.36, facecolor="#7d8286", edgecolor="none", zorder=3, alpha=0.8))
-    ax.add_patch(Wedge(gantry_center, 2.72, 205, 265, width=0.36, facecolor="#5f6468", edgecolor="none", zorder=3, alpha=0.8))
-    add_box((-4.15, -0.25), 0.85, 2.95, 0.85, "#73787c", zorder=2)
-    add_box((-4.0, -2.68), 1.22, 1.42, 0.72, "#696e72", zorder=2)
-    add_box((-4.15, -1.15), 0.75, 1.25, 0.55, "#5f6468", zorder=2)
-
-    gantry_rad = math.radians(90 - gantry)
-    source_radius = 1.68
-    source = iso + np.array([math.cos(gantry_rad) * source_radius, math.sin(gantry_rad) * source_radius])
-    connector_direction = source - gantry_center
-    connector_direction = connector_direction / np.linalg.norm(connector_direction)
-    connector_start = gantry_center + connector_direction * 2.42
-    connector_perp = np.array([-connector_direction[1], connector_direction[0]])
-    neck = np.array(
+    # Block-style linear accelerator: one continuous rectangular gantry and head.
+    source = iso + np.array([0.0, 1.72])
+    gantry_body = np.array(
         [
-            connector_start + connector_perp * 0.34,
-            source + connector_perp * 0.42,
-            source - connector_perp * 0.42,
-            connector_start - connector_perp * 0.34,
+            [-4.6, -3.55],
+            [-3.15, -3.55],
+            [-3.15, 2.72],
+            [source[0] + 0.9, 2.72],
+            [source[0] + 0.9, source[1] - 0.62],
+            [source[0] + 0.62, source[1] - 0.62],
+            [source[0] + 0.62, source[1] - 1.0],
+            [source[0] - 0.62, source[1] - 1.0],
+            [source[0] - 0.62, source[1] - 0.62],
+            [-2.0, source[1] - 0.62],
+            [-2.0, -3.55],
         ]
     )
-    ax.add_patch(Polygon(neck, closed=True, facecolor="#6a7075", edgecolor="#343a40", lw=1.2, zorder=5))
-    ax.add_patch(Circle(connector_start, 0.34, facecolor="#777d82", edgecolor="#464c52", lw=1.0, zorder=6))
-    ax.add_patch(
-        Ellipse(
-            source,
-            width=1.75,
-            height=0.82,
-            angle=-gantry,
-            facecolor="#5d6267",
-            edgecolor="#343a40",
-            lw=1.6,
-            zorder=6,
-        )
-    )
-    ax.add_patch(
-        Ellipse(
-            source - np.array([math.cos(gantry_rad), math.sin(gantry_rad)]) * 0.28,
-            width=1.34,
-            height=0.52,
-            angle=-gantry,
-            facecolor="#8a8f94",
-            edgecolor="#454b52",
-            lw=1.0,
-            zorder=7,
-        )
-    )
-    ax.add_patch(
-        Ellipse(
-            source - np.array([math.cos(gantry_rad), math.sin(gantry_rad)]) * 0.55,
-            width=0.8,
-            height=0.23,
-            angle=-gantry,
-            facecolor="#252a30",
-            edgecolor="#16191d",
-            lw=0.8,
-            zorder=8,
-        )
-    )
-    ax.text(source[0] + 0.16, source[1] + 0.46, "treatment head", fontsize=7.5, color="#343a40", zorder=9)
-    ax.add_patch(Arc(gantry_center, 4.85, 4.85, theta1=67, theta2=296, color="#4d5359", lw=1.0, alpha=0.6, zorder=4))
+    ax.add_patch(Polygon(gantry_body, closed=True, facecolor="#6f7478", edgecolor="#343a40", lw=1.4, zorder=3))
+    ax.add_patch(Polygon(gantry_body + np.array([0.28, 0.22]), closed=True, facecolor="#858a8f", edgecolor="none", alpha=0.28, zorder=2))
+    ax.add_patch(Rectangle((-4.38, -3.25), 1.0, 0.46, facecolor="#555b60", edgecolor="#343a40", lw=0.8, zorder=4))
+    ax.add_patch(Rectangle((-4.32, -2.55), 0.86, 4.55, facecolor="#7d8286", edgecolor="none", alpha=0.36, zorder=4))
+    ax.add_patch(Rectangle((-3.02, 2.2), 3.96, 0.32, facecolor="#9ca1a5", edgecolor="none", alpha=0.45, zorder=4))
+    ax.add_patch(Rectangle((source[0] - 0.5, source[1] - 0.9), 1.0, 0.28, facecolor="#3f454b", edgecolor="#2b3035", lw=0.8, zorder=6))
+    ax.add_patch(Rectangle((source[0] - 0.34, source[1] - 1.03), 0.68, 0.13, facecolor="#202429", edgecolor="#15181b", lw=0.8, zorder=7))
+    ax.text(source[0] + 0.72, source[1] - 0.86, "treatment head", fontsize=7.5, color="#343a40", zorder=9)
 
     if field_light:
         field_width = clamp((abs(jaw_x1) + abs(jaw_x2)) / 4.0, 0.5, 2.8)
